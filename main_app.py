@@ -10,7 +10,7 @@ from app.views.genre_view import genre_ns
 from app.views.movie_view import movie_ns
 
 
-def create_app(config_object):
+def create_app(config_object) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_object)
     register_extensions(app)
@@ -20,9 +20,9 @@ def create_app(config_object):
 def register_extensions(app):
     db.init_app(app)
     api = Api(app)
-    api.add_namespace(genre_ns)
-    api.add_namespace(movie_ns)
     api.add_namespace(director_ns)
+    api.add_namespace(movie_ns)
+    api.add_namespace(genre_ns)
     create_data(app, db)
 
 
@@ -241,25 +241,23 @@ def create_data(app, db):
                 genre_id=movie["genre_id"],
                 director_id=movie["director_id"]
             )
-            with db.session.begin():
-                db.session.add(m)
+            db.session.add(m)
         for director in data["directors"]:
             d = Director(
                 name=director["name"]
             )
-            with db.session.begin():
-                db.session.add(d)
+            db.session.add(d)
         for genre in data["genres"]:
             d = Genre(
                 name=genre["name"]
             )
-            with db.session.begin():
-                db.session.add(d)
+            db.session.add(d)
         db.session.commit()
 
 
 app = create_app(Config())
-app.debug = True
+
+app.url_map.strict_slashes = False
 
 if __name__ == '__main__':
     app.run(debug=True)
